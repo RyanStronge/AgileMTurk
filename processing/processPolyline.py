@@ -4,9 +4,12 @@ import json
 import ast
 from PIL import Image, ImageDraw
 import numpy as np
+import os
+import cv2
 
+print(os.listdir())
 results = []
-with open("processing/csv/export.csv") as csvfile:
+with open("AgileMTurk/processing/csv/export.csv") as csvfile:
     next(csvfile)
     reader = csv.reader(csvfile)
     for row in reader:
@@ -18,7 +21,7 @@ with open("processing/csv/export.csv") as csvfile:
     length = len(results)
 
     for x in range(length):
-        fileName = "processing/fullimgs/image"+str(x)+".jpg"
+        fileName = "AgileMTurk/processing/fullimgs/image"+str(x)+".jpg"
         img_data = requests.get(results[x][0]).content
         with open(fileName, 'wb') as handler:
             handler.write(img_data)
@@ -47,6 +50,23 @@ with open("processing/csv/export.csv") as csvfile:
             newImArray[:, :, :3] = imArray[:, :, :3]
             newImArray[:, :, 3] = mask*255
             newIm = Image.fromarray(newImArray, "RGBA")
-            newIm.save("processing/newimgs/image"+str(x)+".png")
+            newIm.save("AgileMTurk/processing/newimgs/image"+str(x)+".png")
+
+            # cropping
+            im = cv2.imread("AgileMTurk/processing/newimgs/image" +
+                            str(x)+".png", cv2.IMREAD_UNCHANGED)
+            y, x = im[:, :, 3].nonzero()
+            minx = np.min(x)
+            miny = np.min(y)
+            maxx = np.max(x)
+            maxy = np.max(y)
+
+            cropImg = im[miny:maxy, minx:maxx]
+            whiteCellsMask = np.logical_and(cropImg[:, :, 0] == 255, np.logical_and(
+                cropImg[:, :, 1] == 255, cropImg[:, :, 2] == 255))
+            cropImg[whiteCellsMask, :] = [255, 255, 255, 0]
+            cv2.imwrite("AgileMTurk/processing/newimgs/image" +
+                        str(x)+".png", cropImg)
+            cv2.waitKey(0)
         else:
             print("Not a polyline")

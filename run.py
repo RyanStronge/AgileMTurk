@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 import numpy as np
 import os
 import cv2
-from datetime import datetime
+import time
 
 
 app = Flask(__name__)
@@ -28,21 +28,50 @@ def getcsvdata():
     print(str(csvdata))
     print(type(csvdata))
     split = csvdata.split('\n')
-    # split[i][0] is url
-    # split[i][5] is points
 
     for i in range(len(split)):
         if(i > 0):
-            now = datetime.now()
-            name = "img"+now
+            now = time.strftime("%Y%m%d-%H%M%S")
+            name = "img"+str(now)
             os.mkdir(name)
-            fileName = "fullimgs/image"+str(i)+".jpg"
+            file_name = "fullimgs/"+name+".jpg"
+
+            print("\n"+split[1]+"\n")
+            rowsplit = split[i].split(',')
+            # rowsplit[0] is url
+            # rowsplit[5] is points
+
             img_data = requests.get(split[i][0]).content
-            with open(fileName, 'wb') as handler:
+            with open(file_name, 'wb') as handler:
                 handler.write(img_data)
+            jsonData = split[i][5]
+            jsonObj = json.loads(jsonData)
+            print(jsonObj)
+            name = jsonObj["name"]
+            yPoints = jsonObj["all_points_y"]
+            xPoints = jsonObj["all_points_x"]
+
+            yList = eval(str(yPoints))
+            xList = eval(str(xPoints))
+
+            if name == "polyline":
+                im = Image.open(file_name).convert("RGBA")
+                imArray = np.asarray(im)
+                polygon = [None] * len(yList)
+                for z in range(len(yList)):
+                    polygon[z] = (xList[z], yList[z])
+                print(polygon)
+                maskIm = Image.new(
+                    'L', (imArray.shape[1], imArray.shape[0]), 0)
+                ImageDraw.Draw(maskIm).polygon(polygon, outline=1, fill=1)
+                mask = np.array(maskIm)
+                newImArray = np.empty(imArray.shape, dtype='uint8')
+                newImArray[:, :, :3] = imArray[:, :, :3]
+                newImArray[:, :, 3] = mask*255
+                newIm = Image.fromarray(newImArray, "RGBA")
+                newIm.save("newimgs/"+name+".png")
         else:
             print("skipping header")
-
     print(split[1])
     return "OK"
 

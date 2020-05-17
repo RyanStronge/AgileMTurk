@@ -9,7 +9,7 @@ import cv2
 
 print(os.listdir())
 results = []
-with open("AgileMTurk/processing/csv/export.csv") as csvfile:
+with open("csv/export.csv") as csvfile:
     next(csvfile)
     reader = csv.reader(csvfile)
     for row in reader:
@@ -21,7 +21,7 @@ with open("AgileMTurk/processing/csv/export.csv") as csvfile:
     length = len(results)
 
     for x in range(length):
-        fileName = "AgileMTurk/processing/fullimgs/image"+str(x)+".jpg"
+        fileName = "fullimgs/image"+str(x)+".jpg"
         img_data = requests.get(results[x][0]).content
         with open(fileName, 'wb') as handler:
             handler.write(img_data)
@@ -29,6 +29,7 @@ with open("AgileMTurk/processing/csv/export.csv") as csvfile:
         print(results[x][5])
         jsonData = results[x][5]
         jsonObj = json.loads(jsonData)
+        print(jsonObj)
         name = jsonObj["name"]
         yPoints = jsonObj["all_points_y"]
         xPoints = jsonObj["all_points_x"]
@@ -50,10 +51,10 @@ with open("AgileMTurk/processing/csv/export.csv") as csvfile:
             newImArray[:, :, :3] = imArray[:, :, :3]
             newImArray[:, :, 3] = mask*255
             newIm = Image.fromarray(newImArray, "RGBA")
-            newIm.save("AgileMTurk/processing/newimgs/image"+str(x)+".png")
+            newIm.save("newimgs/image"+str(x)+".png")
 
             # cropping
-            im = cv2.imread("AgileMTurk/processing/newimgs/image" +
+            """ im = cv2.imread("AgileMTurk/processing/newimgs/image" +
                             str(x)+".png", cv2.IMREAD_UNCHANGED)
             y, x = im[:, :, 3].nonzero()
             minx = np.min(x)
@@ -67,6 +68,6 @@ with open("AgileMTurk/processing/csv/export.csv") as csvfile:
             cropImg[whiteCellsMask, :] = [255, 255, 255, 0]
             cv2.imwrite("AgileMTurk/processing/newimgs/image" +
                         str(x)+".png", cropImg)
-            cv2.waitKey(0)
+            cv2.waitKey(0) """
         else:
             print("Not a polyline")

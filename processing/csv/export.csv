@@ -1,4 +1,3 @@
 filename,file_size,file_attributes,region_count,region_id,region_shape_attributes,region_attributes
-https://i.ytimg.com/vi/9jiispK7yVw/maxresdefault.jpg,-1,"{}",3,0,"{""name"":""polyline"",""all_points_x"":[780,917,895,616,427,715,782],""all_points_y"":[713,536,492,363,476,706,709]}","{}"
-https://i.ytimg.com/vi/9jiispK7yVw/maxresdefault.jpg,-1,"{}",3,1,"{""name"":""polyline"",""all_points_x"":[954,1021,744,638,952,954],""all_points_y"":[461,361,277,334,458,458]}","{}"
-https://i.ytimg.com/vi/9jiispK7yVw/maxresdefault.jpg,-1,"{}",3,2,"{""name"":""polyline"",""all_points_x"":[562,421,326,264,419,562,556],""all_points_y"":[359,434,410,345,288,350,361]}","{}"
+https://i.imgur.com/IHiz3oL.jpg,-1,"{}",2,0,"{""name"":""polyline"",""all_points_x"":[127,145,155,170,186,221,248,258,257,242,207,164,140,126],""all_points_y"":[117,286,297,301,304,303,291,280,118,108,104,106,110,116]}","{}"
+https://i.imgur.com/IHiz3oL.jpg,-1,"{}",2,1,"{""name"":""polyline"",""all_points_x"":[354,347,361,391,432,455,482,453,415,376,355],""all_points_y"":[113,277,293,301,306,294,122,111,108,110,114]}","{}"

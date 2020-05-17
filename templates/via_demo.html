@@ -1278,8 +1278,9 @@
         <div id="img_fn_list"></div>
       </div>
 
-      <button onclick="download_all_region_data('csv')" title="Export annotations to a CSV file">Export Annotations
-        (as csv)</button>
+      <button onclick="download_all_region_data('csv')" title="Export annotations to a CSV file" id="exportcsv">Export
+        Annotations
+        (as csv) </button>
       <button onclick="download_all_region_data('json')" title="Export annotaitons to a JSON file">Export Annotations
         (as json)</button>
 
@@ -1647,35 +1648,10 @@ POSSIBILITY OF SUCH DAMAGE.
          items like Keyboard Shortcut hidden under the attributes panel -->
   <div style="width: 100%;" id="vertical_space"></div>
 
-  <!-- START: Contents of file: src/demo/_via_basic_demo.js-->
+  <!-- END: Contents of file: src/demo/_via_basic_demo.js-->
+  <!-- START: Contents of file: via.js-->
+  <script type="text/javascript " src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script>
-    /*
-      VGG Image Annotator (via)
-      www.robots.ox.ac.uk/~vgg/software/via/
-    
-      Copyright (c) 2016-2018, Abhishek Dutta.
-      All rights reserved.
-    
-      Redistribution and use in source and binary forms, with or without
-      modification, are permitted provided that the following conditions are met:
-    
-      Redistributions of source code must retain the above copyright notice, this
-      list of conditions and the following disclaimer.
-      Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-      AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-      IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-      ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-      LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-      CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-      SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-      POSSIBILITY OF SUCH DAMAGE.
-    */
 
     function _via_load_submodules() {
 
@@ -1684,11 +1660,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
       annotation_editor_show();
     }
-
-  </script>
-  <!-- END: Contents of file: src/demo/_via_basic_demo.js-->
-  <!-- START: Contents of file: via.js-->
-  <script>
     /*
       VGG Image Annotator (via)
       www.robots.ox.ac.uk/~vgg/software/via/
@@ -1739,7 +1710,6 @@ POSSIBILITY OF SUCH DAMAGE.
       - Handlers for attributes input panel (spreadsheet like user input panel)
     */
 
-    "use strict";
 
     var VIA_VERSION = '2.0.9';
     var VIA_NAME = 'VGG Image Annotator';
@@ -2069,14 +2039,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
       var substring = "\n";
 
-      if (imageUrl.contains()) {
-        console.log("multi");
-        project_file_add_url_input_done(multiInput);
-      }
-      else {
-        console.log("single");
-        project_file_add_url_input_done(singleInput);
-      }
+
+      console.log("single");
+      project_file_add_url_input_done(singleInput);
+
 
       // e.g. demo modules
       if (typeof _via_load_submodules === 'function') {
@@ -2253,6 +2219,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
       // Javascript strings (DOMString) is automatically converted to utf-8
       // see: https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
+      mturkcsv();
       pack_via_metadata(type).then(function (data) {
         var blob_attr = { type: 'text/' + file_extension + ';charset=utf-8' };
         var all_region_data_blob = new Blob(data, blob_attr);
@@ -2493,6 +2460,8 @@ POSSIBILITY OF SUCH DAMAGE.
         return { 'is_header': false };
       }
     }
+
+
 
     function import_annotations_from_json(data_str) {
       return new Promise(function (ok_callback, err_callback) {
@@ -2925,10 +2894,16 @@ POSSIBILITY OF SUCH DAMAGE.
                 rattr = '"' + escape_for_csv(rattr) + '"';
                 csvline.push(rattr);
                 csvdata.push(csvline.join(VIA_CSV_SEP));
+                console.log(csvdata);
+
+
+
               }
             } else {
               // @todo: reconsider this practice of adding an empty entry
               csvdata.push(prefix + ',0,0,"{}","{}"');
+              console.log("in else" + csvdata);
+
             }
           }
           ok_callback(csvdata);
@@ -3024,6 +2999,63 @@ POSSIBILITY OF SUCH DAMAGE.
           ok_callback([JSON.stringify(_via_img_metadata)]);
         }
       }.bind(this));
+    }
+
+    $(function () {
+      $('#exportcsv').click(function () {
+        $.ajax({
+          url: '/csv',
+          data: {
+            csvdata: mturkcsv().toString()
+          },
+          datatype: 'JSON',
+          type: 'GET',
+          success: alert("Data: " + mturkcsv())
+        });
+      });
+    });
+
+    function mturkcsv() {
+
+      var csvdata = [];
+      var csvheader = 'filename,file_size,file_attributes,region_count,region_id,region_shape_attributes,region_attributes';
+      csvdata.push(csvheader);
+
+      for (var image_id in _via_img_metadata) {
+        var fattr = map_to_json(_via_img_metadata[image_id].file_attributes);
+        fattr = escape_for_csv(fattr);
+
+        var prefix = '\n' + _via_img_metadata[image_id].filename;
+        prefix += ',' + _via_img_metadata[image_id].size;
+        prefix += ',"' + fattr + '"';
+
+        var r = _via_img_metadata[image_id].regions;
+
+        if (r.length !== 0) {
+          for (var i = 0; i < r.length; ++i) {
+            var csvline = [];
+            csvline.push(prefix);
+            csvline.push(r.length);
+            csvline.push(i);
+
+            var sattr = map_to_json(r[i].shape_attributes);
+            sattr = '"' + escape_for_csv(sattr) + '"';
+            csvline.push(sattr);
+
+            var rattr = map_to_json(r[i].region_attributes);
+            rattr = '"' + escape_for_csv(rattr) + '"';
+            csvline.push(rattr);
+            csvdata.push(csvline.join(VIA_CSV_SEP));
+            console.log(csvdata);
+            return csvdata;
+          }
+        } else {
+          // @todo: reconsider this practice of adding an empty entry
+          csvdata.push(prefix + ',0,0,"{}","{}"');
+          console.log("in else" + csvdata);
+          return csvdata;
+        }
+      }
     }
 
     function via_region_shape_to_coco_annotation(shape_attributes) {

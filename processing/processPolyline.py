@@ -54,7 +54,7 @@ with open("csv/export.csv") as csvfile:
             newIm.save("newimgs/image"+str(x)+".png")
 
             # cropping
-            """ im = cv2.imread("AgileMTurk/processing/newimgs/image" +
+            im = cv2.imread("AgileMTurk/processing/newimgs/image" +
                             str(x)+".png", cv2.IMREAD_UNCHANGED)
             y, x = im[:, :, 3].nonzero()
             minx = np.min(x)
@@ -68,6 +68,6 @@ with open("csv/export.csv") as csvfile:
             cropImg[whiteCellsMask, :] = [255, 255, 255, 0]
             cv2.imwrite("AgileMTurk/processing/newimgs/image" +
                         str(x)+".png", cropImg)
-            cv2.waitKey(0) """
+            cv2.waitKey(0)
         else:
             print("Not a polyline")

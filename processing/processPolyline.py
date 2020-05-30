@@ -3,7 +3,7 @@ import json
 from PIL import Image, ImageDraw
 import numpy as np
 import os
-import cv2
+#import cv2
 import psycopg2
 import time
 
@@ -25,20 +25,19 @@ def getcsvdataprocess():
     print(os.getcwd())
     print(os.listdir())
     now = time.strftime("%Y%m%d-%H%M%S")
-    name = "img"+str(now)
-    os.mkdir("fullimgs/"+name)
-    os.mkdir("newimgs/"+name)
-    execute_command("SELECT * FROM data")
-    rows = cur.fetchall()
+    timeName = "img"+str(now)
+    os.mkdir("fullimgs/"+timeName)
+    os.mkdir("newimgs/"+timeName)
+    rows = execute_command("SELECT * FROM data")
     for row in rows:
         name = "img"+str(row[0])
-        file_name = "fullimgs/"+name+".jpg"
+        file_name = "fullimgs/"+timeName+"/"+ name +".jpg"
         # row[0] is id: int
         # row[1] is url: str
         # row[2] is points: json
 
         img_data = requests.get(str(row[1])).content
-        
+        print("url: "+str(row[1]))
         with open(file_name, 'wb') as handler:
             handler.write(img_data)
             jsonData = str(row[2])
@@ -65,9 +64,10 @@ def getcsvdataprocess():
                 newImArray[:, :, :3] = imArray[:, :, :3]
                 newImArray[:, :, 3] = mask*255
                 newIm = Image.fromarray(newImArray, "RGBA")
-                newIm.save("newimgs/"+name+"/"+name + ".png")
-                im = cv2.imread("newimgs/"+name+"/" +
+                newIm.save("newimgs/"+timeName+"/"+name + ".png")
+"""                 im = cv2.imread("newimgs/"+name+"/" +
                                 name+".png", cv2.IMREAD_UNCHANGED)
+                
                 y, x = im[:, :, 3].nonzero()
                 minx = np.min(x)
                 miny = np.min(y)
@@ -81,9 +81,7 @@ def getcsvdataprocess():
 
                 cv2.imwrite("newimgs/"+name+"/" +
                             name + ".png", cropImg)
-                cv2.waitKey(0)
-            else:
-                print("skipping header")
+                cv2.waitKey(0) """
 
 
 getcsvdataprocess()
